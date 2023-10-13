@@ -16,6 +16,20 @@ def md5(user):
     m.update(bytes(ctime, encoding='utf-8'))
     return m.hexdigest()
 
+
+class Authtication(object):
+
+    def authenticate(self, request):
+        token = request.data.get('token')
+        token_obj = models.User_Info.objects.filter(token=token).first()
+        if not token_obj:
+            raise exceptions.AuthenticationFailed('token失效')
+        return token_obj, token
+
+    def authenticate_header(self, request):
+        pass
+
+
 class Register(APIView):
 
     def post(self, request):
