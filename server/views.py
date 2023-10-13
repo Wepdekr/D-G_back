@@ -8,6 +8,14 @@ from server import models
 from django.http import JsonResponse
 import base64
 
+def md5(user):
+    import hashlib
+    import time
+    ctime = str(time.time())
+    m = hashlib.md5(bytes(user, encoding='utf-8'))
+    m.update(bytes(ctime, encoding='utf-8'))
+    return m.hexdigest()
+
 class Register(APIView):
 
     def post(self, request):
