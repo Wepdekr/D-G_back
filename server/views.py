@@ -74,3 +74,9 @@ class Login(APIView):
         ret['msg'] = '登录成功'
         return JsonResponse(ret)
 
+
+class Room(APIView):
+    authentication_classes = [Authtication, ]
+
+    def get(self, request):
+        ret = {}
