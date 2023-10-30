@@ -45,7 +45,7 @@ class Register(APIView):
             ret['status_code'] = 404
             ret['msg'] = '用户已注册'
             return JsonResponse(ret)
-        models.User_Info.objects.create(username=username, password=password, token=token)
+        models.User_Info.objects.create(username=username, password=password)
         ret['status_code'] = 200
         ret['msg'] = '注册成功'
         return JsonResponse(ret)
@@ -73,3 +73,4 @@ class Login(APIView):
         ret['token'] = token
         ret['msg'] = '登录成功'
         return JsonResponse(ret)
+
