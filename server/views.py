@@ -58,18 +58,18 @@ class Login(APIView):
         username = request.POST.get('username')
         password = request.POST.get('password')
         if not username or not password:
-            ret['code'] = 404
+            ret['status_code'] = 404
             ret['msg'] = '请求参数错误'
             return JsonResponse(ret)
         user = models.User_Info.objects.filter(username=username, password=password).first()
         if not user:
-            ret['code'] = 404
+            ret['status_code'] = 404
             ret['msg'] = '用户名或密码错误'
             return JsonResponse(ret)
         token = md5(username)
         user.token = token
         user.save()
-        ret['code'] = 200
+        ret['status_code'] = 200
         ret['token'] = token
         ret['msg'] = '登录成功'
         return JsonResponse(ret)
@@ -80,3 +80,17 @@ class Room(APIView):
 
     def get(self, request):
         ret = {}
+        room_id = request.GET.get('room_id')
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if not room :
+            ret['status_code'] = 404
+            ret['msg'] = '房间不存在'
+            return JsonResponse(ret)
+        ret['state'] = room.state
+        ret['lexicon_id'] = room.lexicon_id
+        ret['member'] = room.member
+        ret['ready'] = room.ready
+        ret['owner'] = room.owner
+        return JsonResponse(ret)
+
+    

@@ -7,6 +7,7 @@ class User_Info(models.Model):  # 用户信息
     token = models.TextField(max_length=64,default='')
 
 class Room_Info(models.Model):
+    room_id = models.TextField(default='')
     owner = models.TextField(default='')
     lexicon_id = models.IntegerField(default=0)
     state = models.BooleanField(default=False)
