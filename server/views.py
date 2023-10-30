@@ -6,7 +6,9 @@ from rest_framework.views import APIView
 from rest_framework import exceptions
 from server import models
 from django.http import JsonResponse
+import random
 import base64
+
 
 def md5(user):
     import hashlib
@@ -82,7 +84,7 @@ class Room(APIView):
         ret = {}
         room_id = request.GET.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
-        if not room :
+        if not room:
             ret['status_code'] = 404
             ret['msg'] = '房间不存在'
             return JsonResponse(ret)
@@ -93,4 +95,14 @@ class Room(APIView):
         ret['owner'] = room.owner
         return JsonResponse(ret)
 
-    
+    def post(self, request):
+        ret = {}
+        owner = request.user
+        room_id = ''
+        for _ in range(8):
+            room_id += chr(random.randint(97, 122))
+        models.Room_Info.objects.create(room_id=room_id, owner=owner.username, member=owner.username, ready='1')
+        ret['status_code'] = 200
+        ret['room_id'] = room_id
+        ret['msg'] = '创建成功'
+        return JsonResponse(ret)
