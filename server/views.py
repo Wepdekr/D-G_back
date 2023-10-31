@@ -106,3 +106,17 @@ class Room(APIView):
         ret['room_id'] = room_id
         ret['msg'] = '创建成功'
         return JsonResponse(ret)
+
+class Join(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        user = request.user
+        room_id = request.POST.get('room_id')
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        room.member = room.member + ',' + user.username
+        room.ready = room.ready + ',' + '0'
+        ret['status_code'] = 200
+        ret['msg'] = '加入成功'
+        return JsonResponse(ret)
