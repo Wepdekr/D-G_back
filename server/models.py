@@ -13,3 +13,9 @@ class Room_Info(models.Model):
     state = models.BooleanField(default=False)
     member = models.TextField(default='')
     ready = models.TextField(default='')
+    round = models.IntegerField(default=0)
+
+class Work_info(models.Model):
+    room_id = models.TextField(default='')
+    round = models.IntegerField(default=0)
+    username = models.TextField(default='')
