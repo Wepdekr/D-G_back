@@ -19,3 +19,6 @@ class Work_info(models.Model):
     room_id = models.TextField(default='')
     round = models.IntegerField(default=0)
     username = models.TextField(default='')
+    category = models.IntegerField(default=0)  # 0图片 1词语
+    img = models.TextField(default='')
+    word = models.TextField(default='')

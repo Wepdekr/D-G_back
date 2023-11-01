@@ -188,3 +188,27 @@ class Lexicon(APIView):
             ret['status_code'] = 200
             ret['msg'] = '修改成功'
         return JsonResponse(ret)
+
+
+class Work(APIView):
+    authentication_classes = [Authtication, ]
+
+    def get(self, request):
+        ret = {}
+        room_id = request.GET.get('room_id')
+        round = request.GET.get('round')
+        username = request.GET.get('username')
+        work = models.Work_info.objects.filter(room_id=room_id,round=round,username=username).first()
+        if not work:
+            ret['status_code'] = 404
+            ret['msg'] = '参数错误'
+            return JsonResponse(ret)
+        if work.category == 0:
+            ret['status_code'] = 200
+            ret['word'] = work.word
+            ret['img'] = ''
+        else:
+            ret['status_code'] = 200
+            ret['word'] = ''
+            ret['img'] = work.img
+        return JsonResponse(ret)
