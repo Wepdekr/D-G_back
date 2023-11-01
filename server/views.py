@@ -198,7 +198,7 @@ class Work(APIView):
         room_id = request.GET.get('room_id')
         round = request.GET.get('round')
         username = request.GET.get('username')
-        work = models.Work_info.objects.filter(room_id=room_id,round=round,username=username).first()
+        work = models.Work_info.objects.filter(room_id=room_id, round=round, username=username).first()
         if not work:
             ret['status_code'] = 404
             ret['msg'] = '参数错误'
@@ -211,4 +211,28 @@ class Work(APIView):
             ret['status_code'] = 200
             ret['word'] = ''
             ret['img'] = work.img
+        return JsonResponse(ret)
+
+
+class Submit(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        user = request.user
+        room_id = request.POST.get('room_id')
+        is_word = request.POST.get('is_word')
+        round = request.POST.get('round')
+        if is_word == '1':
+            word = request.POST.get('word')
+            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=0, word=word)
+        else:
+            img = request.POST.get('img')
+            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=0, img=img)
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if len(models.Work_info.objects.filter(room_id=room_id,round=round)) == len(room.member.split(',')):
+            room.round = room.round + 1
+            room.save()
+        ret['status_code'] = 200
+        ret['msg'] = '提交成功'
         return JsonResponse(ret)
