@@ -117,6 +117,7 @@ class Join(APIView):
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         room.member = room.member + ',' + user.username
         room.ready = room.ready + ',' + '0'
+        room.save()
         ret['status_code'] = 200
         ret['msg'] = '加入成功'
         return JsonResponse(ret)
