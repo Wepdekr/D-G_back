@@ -120,3 +120,48 @@ class Join(APIView):
         ret['status_code'] = 200
         ret['msg'] = '加入成功'
         return JsonResponse(ret)
+
+class Start(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        user = request.user
+        room_id = request.POST.get('room_id')
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        member = room.member.split(',')
+        ready = room.ready.split(',')
+        if user.username not in member:
+            ret['status_code'] = 404
+            ret['msg'] = '未在房间中'
+            return JsonResponse(ret)
+        if member[0] == user.username:
+            if 0 in ready:
+                ret['status_code'] = 200
+                ret['msg'] = '有人未准备'
+            else:
+                room.state = 1
+                room.save()
+                ret['status_code'] = 200
+                ret['msg'] = '开始'
+            return JsonResponse(ret)
+        else:
+            pos = 0
+            for i in range(len(member)):
+                if user.username == member[i]:
+                    pos = i
+                    break
+            if ready[pos] == 0:
+                ready[pos] = 1
+                ret['status_code'] = 200
+                ret['msg'] = '准备'
+            else:
+                ready[pos] = 0
+                ret['status_code'] = 200
+                ret['msg'] = '取消准备'
+            ready_text = ready[0]
+            for i in range(1,(len(ready))):
+                ready_text = ready_text + ',' + ready[i]
+            room.ready = ready_text
+            room.save()
+        return JsonResponse(ret)
