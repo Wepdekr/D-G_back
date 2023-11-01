@@ -236,3 +236,19 @@ class Submit(APIView):
         ret['status_code'] = 200
         ret['msg'] = '提交成功'
         return JsonResponse(ret)
+
+
+class Round(APIView):
+    authentication_classes = [Authtication, ]
+
+    def get(self, request):
+        ret = {}
+        room_id = request.GET.get('room_id')
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if not room:
+            ret['status_code'] = 404
+            ret['msg'] = '房间号错误'
+            return JsonResponse(ret)
+        ret['status_code'] = 200
+        ret['round'] = room.round
+        return JsonResponse(ret)
