@@ -107,6 +107,7 @@ class Room(APIView):
         ret['msg'] = '创建成功'
         return JsonResponse(ret)
 
+
 class Join(APIView):
     authentication_classes = [Authtication, ]
 
@@ -121,6 +122,7 @@ class Join(APIView):
         ret['status_code'] = 200
         ret['msg'] = '加入成功'
         return JsonResponse(ret)
+
 
 class Start(APIView):
     authentication_classes = [Authtication, ]
@@ -161,8 +163,28 @@ class Start(APIView):
                 ret['status_code'] = 200
                 ret['msg'] = '取消准备'
             ready_text = ready[0]
-            for i in range(1,(len(ready))):
+            for i in range(1, (len(ready))):
                 ready_text = ready_text + ',' + ready[i]
             room.ready = ready_text
             room.save()
+        return JsonResponse(ret)
+
+
+class Lexicon(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        room_id = request.POST.get('room_id')
+        lexicon_id = request.POST.get('lexicon_id')
+        user = request.user
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if user.username != room.owner:
+            ret['status_code'] = 403
+            ret['msg'] = '无修改权限'
+        else:
+            room.lexicon_id = lexicon_id
+            room.save()
+            ret['status_code'] = 200
+            ret['msg'] = '修改成功'
         return JsonResponse(ret)
