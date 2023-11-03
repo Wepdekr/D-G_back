@@ -29,5 +29,5 @@ urlpatterns = [
     path(r'work', views.Work.as_view()),
     path(r'submit', views.Submit.as_view()),
     path(r'round', views.Round.as_view()),
-    
+    path(r'vote', views.Vote.as_view()),
 ]
