@@ -24,4 +24,5 @@ urlpatterns = [
     path(r'user', views.Register.as_view()),
     path(r'room', views.Room.as_view()),
     path(r'join', views.Join.as_view()),
+    path(r'start', views.Start.as_view()),
 ]
