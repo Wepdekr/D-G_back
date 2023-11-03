@@ -7,7 +7,8 @@ from rest_framework import exceptions
 from server import models
 from django.http import JsonResponse
 import random
-import base64
+from random import sample
+import json
 
 
 def md5(user):
@@ -144,6 +145,13 @@ class Start(APIView):
                 ret['msg'] = '有人未准备'
             else:
                 room.state = 1
+                with open('superheroes.json') as f:
+                    lexicon_data = json.load(f)
+                lexicon = lexicon_data[room.lexicon_id]
+                res = sample(lexicon, len(member))
+                for i in range(len(res)):
+                    models.Work_info.objects.create(username=member[i], room_id=room_id, round=0, category=1, word=res[i])
+                room.round = 1
                 room.save()
                 ret['status_code'] = 200
                 ret['msg'] = '开始'
@@ -225,12 +233,12 @@ class Submit(APIView):
         round = request.POST.get('round')
         if is_word == '1':
             word = request.POST.get('word')
-            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=0, word=word)
+            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=1, word=word)
         else:
             img = request.POST.get('img')
             models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=0, img=img)
         room = models.Room_Info.objects.filter(room_id=room_id).first()
-        if len(models.Work_info.objects.filter(room_id=room_id,round=round)) == len(room.member.split(',')):
+        if len(models.Work_info.objects.filter(room_id=room_id, round=round)) == len(room.member.split(',')):
             room.round = room.round + 1
             room.save()
         ret['status_code'] = 200
