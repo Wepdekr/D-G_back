@@ -150,7 +150,8 @@ class Start(APIView):
                 lexicon = lexicon_data[room.lexicon_id]
                 res = sample(lexicon, len(member))
                 for i in range(len(res)):
-                    models.Work_info.objects.create(username=member[i], room_id=room_id, round=0, category=1, word=res[i])
+                    models.Work_info.objects.create(username=member[i], room_id=room_id, round=0, category=1,
+                                                    word=res[i])
                 room.round = 1
                 room.save()
                 ret['status_code'] = 200
@@ -260,3 +261,23 @@ class Round(APIView):
         ret['status_code'] = 200
         ret['round'] = room.round
         return JsonResponse(ret)
+
+
+class Vote(APIView):
+    authentication_classes = [Authtication, ]
+
+    def get(self, request):
+        ret = {}
+        room_id = request.GET.get('room_id')
+        username = request.GET.get('username')
+        round = request.GET.get('round')
+        work = models.Work_info.objects.filter(room_id=room_id, username=username, round=round).first()
+        if not work:
+            ret['status_code'] = 404
+            ret['msg'] = '未找到结果'
+            return JsonResponse(ret)
+        ret['status_code'] = 200
+        ret['approval'] = work.approval
+        ret['disapproval'] = work.disapproval
+        return JsonResponse(ret)
+        

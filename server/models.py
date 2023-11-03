@@ -22,3 +22,5 @@ class Work_info(models.Model):
     category = models.IntegerField(default=0)  # 0图片 1词语
     img = models.TextField(default='')
     word = models.TextField(default='')
+    approval = models.IntegerField(default=0)
+    disapproval = models.IntegerField(default=0)
