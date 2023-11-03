@@ -145,9 +145,10 @@ class Start(APIView):
                 ret['msg'] = '有人未准备'
             else:
                 room.state = 1
-                with open('server/lexicon.json',encoding='utf-8') as f:
+                with open('server/lexicon.json', encoding='utf-8') as f:
                     lexicon_data = json.load(f)
-                lexicon = lexicon_data[room.lexicon_id]
+                sort = ["动物类", "植物类", "食品类", "交通工具", "日常用品", "地点和建筑", "职业", "活动和娱乐"]
+                lexicon = lexicon_data[sort[room.lexicon_id]]
                 res = sample(lexicon, len(member))
                 for i in range(len(res)):
                     models.Work_info.objects.create(username=member[i], room_id=room_id, round=0, category=1,
