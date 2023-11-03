@@ -28,4 +28,6 @@ urlpatterns = [
     path(r'lexicon', views.Lexicon.as_view()),
     path(r'work', views.Work.as_view()),
     path(r'submit', views.Submit.as_view()),
+    path(r'round', views.Round.as_view()),
+    
 ]
