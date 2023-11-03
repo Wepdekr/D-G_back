@@ -140,12 +140,12 @@ class Start(APIView):
             ret['msg'] = '未在房间中'
             return JsonResponse(ret)
         if member[0] == user.username:
-            if 0 in ready:
+            if '0' in ready:
                 ret['status_code'] = 200
                 ret['msg'] = '有人未准备'
             else:
                 room.state = 1
-                with open('superheroes.json') as f:
+                with open('lexicon.json') as f:
                     lexicon_data = json.load(f)
                 lexicon = lexicon_data[room.lexicon_id]
                 res = sample(lexicon, len(member))
@@ -163,12 +163,12 @@ class Start(APIView):
                 if user.username == member[i]:
                     pos = i
                     break
-            if ready[pos] == 0:
-                ready[pos] = 1
+            if ready[pos] == '0':
+                ready[pos] = '1'
                 ret['status_code'] = 200
                 ret['msg'] = '准备'
             else:
-                ready[pos] = 0
+                ready[pos] = '0'
                 ret['status_code'] = 200
                 ret['msg'] = '取消准备'
             ready_text = ready[0]
