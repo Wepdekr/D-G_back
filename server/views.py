@@ -211,7 +211,7 @@ class Work(APIView):
             ret['status_code'] = 404
             ret['msg'] = '参数错误'
             return JsonResponse(ret)
-        if work.category == 0:
+        if work.category == 1:
             ret['status_code'] = 200
             ret['word'] = work.word
             ret['img'] = ''
