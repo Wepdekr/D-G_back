@@ -280,4 +280,22 @@ class Vote(APIView):
         ret['approval'] = work.approval
         ret['disapproval'] = work.disapproval
         return JsonResponse(ret)
-        
+
+    def post(self, request):
+        ret = {}
+        room_id = request.POST.get('room_id')
+        username = request.POST.get('username')
+        round = request.POST.get('round')
+        result = request.POST.get('result')
+        work = models.Work_info.objects.filter(room_id=room_id, username=username, round=round).first()
+        if not work:
+            ret['status_code'] = 404
+            ret['msg'] = '未找到结果'
+            return JsonResponse(ret)
+        if result:
+            work.approval = work.approval + 1
+        else:
+            work.disapproval = work.disapproval + 1
+        work.save()
+        ret['status_code'] = 200
+        return JsonResponse(ret)
