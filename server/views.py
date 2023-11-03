@@ -145,7 +145,7 @@ class Start(APIView):
                 ret['msg'] = '有人未准备'
             else:
                 room.state = 1
-                with open('lexicon.json') as f:
+                with open('server/lexicon.json',encoding='utf-8') as f:
                     lexicon_data = json.load(f)
                 lexicon = lexicon_data[room.lexicon_id]
                 res = sample(lexicon, len(member))
@@ -292,7 +292,7 @@ class Vote(APIView):
             ret['status_code'] = 404
             ret['msg'] = '未找到结果'
             return JsonResponse(ret)
-        if result:
+        if result == '1':
             work.approval = work.approval + 1
         else:
             work.disapproval = work.disapproval + 1
