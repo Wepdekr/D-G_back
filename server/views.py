@@ -66,7 +66,7 @@ class Login(APIView):
             return JsonResponse(ret)
         user = models.User_Info.objects.filter(username=username, password=password).first()
         if not user:
-            ret['status_code'] = 404
+            ret['status_code'] = 403
             ret['msg'] = '用户名或密码错误'
             return JsonResponse(ret)
         token = md5(username)
