@@ -195,13 +195,17 @@ class Lexicon(APIView):
         ret = {}
         room_id = request.POST.get('room_id')
         lexicon_id = request.POST.get('lexicon_id')
+        if not room_id or not lexicon_id:
+            ret['status_code'] = 404
+            ret['msg'] = '请求参数错误'
+            return JsonResponse(ret) 
         user = request.user
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if user.username != room.owner:
             ret['status_code'] = 403
             ret['msg'] = '无修改权限'
         else:
-            room.lexicon_id = lexicon_id
+            room.lexicon_id = lexicon_id # TODO 对非法词库号的处理
             room.save()
             ret['status_code'] = 200
             ret['msg'] = '修改成功'
