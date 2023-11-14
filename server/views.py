@@ -45,8 +45,8 @@ class Register(APIView):
             return JsonResponse(ret)
         user = models.User_Info.objects.filter(username=username).first()
         if user:
-            ret['status_code'] = 404
-            ret['msg'] = '用户已注册'
+            ret['status_code'] = 403
+            ret['msg'] = '用户名重复，请更换用户名'
             return JsonResponse(ret)
         models.User_Info.objects.create(username=username, password=password)
         ret['status_code'] = 200
