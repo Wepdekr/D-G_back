@@ -101,8 +101,8 @@ class Room(APIView):
         owner = request.user
         room_id = ''
         for _ in range(8):
-            room_id += chr(random.randint(97, 122))
-        models.Room_Info.objects.create(room_id=room_id, owner=owner.username, member=owner.username, ready='1')
+            room_id += chr(random.randint(97, 122)) # TODO 此处存在问题，可能产生同样的roomid
+        models.Room_Info.objects.create(room_id=room_id, owner=owner.username, member=owner.username, ready='1') #TODO 待修复 Room id 应当为unique的
         ret['status_code'] = 200
         ret['room_id'] = room_id
         ret['msg'] = '创建成功'
