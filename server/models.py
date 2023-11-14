@@ -2,12 +2,12 @@ from django.db import models
 
 # Create your models here.
 class User_Info(models.Model):  # 用户信息
-    username = models.TextField(default='')
+    username = models.TextField(default='')  # TODO 用户名应当为unique
     password = models.TextField(max_length=32, default='')
-    token = models.TextField(max_length=64,default='')
+    token = models.TextField(max_length=64,default='') # TODO token机制存在问题
 
 class Room_Info(models.Model):
-    room_id = models.TextField(default='')
+    room_id = models.TextField(default='') # TODO room_id应当为unique
     owner = models.TextField(default='')
     lexicon_id = models.IntegerField(default=0)
     state = models.BooleanField(default=False)
