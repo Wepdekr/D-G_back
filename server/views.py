@@ -116,13 +116,21 @@ class Join(APIView):
         ret = {}
         user = request.user
         room_id = request.POST.get('room_id')
+        if not room_id:
+            ret['status_code'] = 404
+            ret['msg'] = '请求参数错误'
+            return JsonResponse(ret)
         room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if not room:
+            ret['status_code'] = 403
+            ret['msg'] = '房间不存在'
+            return JsonResponse(ret)
         room.member = room.member + ',' + user.username
         room.ready = room.ready + ',' + '0'
         room.save()
         ret['status_code'] = 200
         ret['msg'] = '加入成功'
-        return JsonResponse(ret)
+        return JsonResponse(ret) # TODO 如果房间满人应该做出处理
 
 
 class Start(APIView):
