@@ -26,7 +26,7 @@ class Authtication(object):
         token = request.data.get('token')
         token_obj = models.User_Info.objects.filter(token=token).first()
         if not token_obj:
-            raise exceptions.AuthenticationFailed('token失效')
+            raise exceptions.AuthenticationFailed('token失效或错误')
         return token_obj, token
 
     def authenticate_header(self, request):
