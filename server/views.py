@@ -69,7 +69,7 @@ class Login(APIView):
             ret['status_code'] = 403
             ret['msg'] = '用户名或密码错误'
             return JsonResponse(ret)
-        token = md5(username)
+        token = md5(username) # TODO Token机制存在问题
         user.token = token
         user.save()
         ret['status_code'] = 200
