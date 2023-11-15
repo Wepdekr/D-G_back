@@ -133,7 +133,7 @@ class Room(APIView):
 class Join(APIView):
     authentication_classes = [Authtication, ]
 
-    def post(self, request):
+    def post(self, request): # TODO 不能加入已经开始的房间
         ret = {}
         user = request.user
         room_id = request.POST.get('room_id') #TODO 如果已经在房间中要进行处理
