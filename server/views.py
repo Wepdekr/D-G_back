@@ -92,6 +92,8 @@ class Room(APIView):
             ret['status_code'] = 404
             ret['msg'] = '房间不存在'
             return JsonResponse(ret)
+        ret['status_code'] = 200
+        ret['msg'] = '获取成功'
         ret['state'] = room.state
         ret['lexicon_id'] = room.lexicon_id
         ret['member'] = room.member
