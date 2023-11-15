@@ -305,7 +305,7 @@ class Vote(APIView):
 class Exit(APIView):
     authentication_classes = [Authtication, ]
 
-    def get(self, request):
+    def post(self, request):
         ret = {}
         room_id = request.POST.get('room_id')
         user = request.user
