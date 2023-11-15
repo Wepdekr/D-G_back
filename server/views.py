@@ -23,7 +23,10 @@ def md5(user):
 class Authtication(object):
 
     def authenticate(self, request):
-        token = request.data.get('token')
+        if request.method == "GET":
+            token = request.GET.get('token')
+        else:
+            token = request.data.get('token')
         token_obj = models.User_Info.objects.filter(token=token).first()
         if not token_obj:
             raise exceptions.AuthenticationFailed('token失效或错误')
