@@ -317,3 +317,41 @@ class Vote(APIView):
         work.save()
         ret['status_code'] = 200
         return JsonResponse(ret)
+
+
+class Exit(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        room_id = request.POST.get('room_id')
+        user = request.user
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        print(not room)
+        if not room:
+            ret['status_code'] = 404
+            ret['msg'] = '房间未找到'
+            return JsonResponse(ret)
+        if user.username == room.owner:
+            room.delete()
+            ret['status_code'] = 200
+            ret['msg'] = '房间已解散'
+            return JsonResponse(ret)
+        member = room.member.split(',')
+        ready = room.ready.split(',')
+        if user.username not in member:
+            ret['status_code'] = 403
+            ret['msg'] = '不在房间内'
+            return JsonResponse(ret)
+        new_member_list = member[0]
+        new_ready_list = ready[0]
+        for i in range(1, len(member)):
+            if user.username != member[i]:
+                new_member_list = new_member_list + ',' + member[i]
+                new_ready_list = new_ready_list + ',' + ready[i]
+        room.member = new_member_list
+        room.ready = new_ready_list
+        room.save()
+        ret['status_code'] = 200
+        ret['msg'] = '房间已退出'
+        return JsonResponse(ret)
