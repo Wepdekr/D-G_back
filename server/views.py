@@ -120,7 +120,7 @@ class Join(APIView):
     def post(self, request):
         ret = {}
         user = request.user
-        room_id = request.POST.get('room_id')
+        room_id = request.POST.get('room_id') #TODO 如果已经在房间中要进行处理
         if not room_id:
             ret['status_code'] = 404
             ret['msg'] = '请求参数错误'
