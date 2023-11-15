@@ -130,7 +130,7 @@ class Join(APIView):
             ret['status_code'] = 403
             ret['msg'] = '房间不存在'
             return JsonResponse(ret)
-        room.member = room.member + ',' + user.username
+        room.member = room.member + ',' + user.username # TODO 这样如果用户名存在,会有问题，可以改为jsonField存储列表
         room.ready = room.ready + ',' + '0'
         room.save()
         ret['status_code'] = 200
