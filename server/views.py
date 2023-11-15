@@ -170,7 +170,7 @@ class Start(APIView):
             return JsonResponse(ret)
         if member[0] == user.username:
             if '0' in ready:
-                ret['status_code'] = 200
+                ret['status_code'] = 201
                 ret['msg'] = '有人未准备'
             else:
                 room.state = 1
@@ -203,7 +203,7 @@ class Start(APIView):
                 ret['msg'] = '取消准备'
             ready_text = ready[0]
             for i in range(1, (len(ready))):
-                ready_text = ready_text + ',' + ready[i]
+                ready_text = ready_text + ',' + ready[i] # TODO 字符串拼接待优化
             room.ready = ready_text
             room.save()
         return JsonResponse(ret)
