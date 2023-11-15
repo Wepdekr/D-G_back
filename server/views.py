@@ -100,9 +100,14 @@ class Room(APIView):
         ret = {}
         owner = request.user
         room_id = ''
+        lexicon_id = request.POST.get('lexicon_id')
+        if not lexicon_id:
+            ret['status_code'] = 404
+            ret['msg'] = '请求参数错误'
+            return JsonResponse(ret)
         for _ in range(8):
             room_id += chr(random.randint(97, 122)) # TODO 此处存在问题，可能产生同样的roomid
-        models.Room_Info.objects.create(room_id=room_id, owner=owner.username, member=owner.username, ready='1') #TODO 待修复 Room id 应当为unique的
+        models.Room_Info.objects.create(room_id=room_id, owner=owner.username, member=owner.username, lexicon_id=lexicon_id, ready='1') #TODO 待修复 Room id 应当为unique的
         ret['status_code'] = 200
         ret['room_id'] = room_id
         ret['msg'] = '创建成功'
