@@ -328,6 +328,7 @@ class Exit(APIView):
                 new_ready_list = new_ready_list + ',' + ready[i]
         room.member = new_member_list
         room.ready = new_ready_list
+        room.save()
         ret['status_code'] = 200
         ret['msg'] = '房间已退出'
         return JsonResponse(ret)
