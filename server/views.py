@@ -86,12 +86,23 @@ class Room(APIView):
 
     def get(self, request):
         ret = {}
-        room_id = request.GET.get('room_id') # TODO 应当限制只能查看自己所在房间的情况
+        room_id = request.GET.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if not room:
             ret['status_code'] = 404
             ret['msg'] = '房间不存在'
             return JsonResponse(ret)
+        user = request.user
+        try:
+            pos = room.member.split(',').index(user.username)
+        except ValueError:
+            ret['status_code'] = 403
+            ret['msg'] = '玩家不在此房间中'
+            return JsonResponse(ret)
+        if(room.ready.split(',')[pos] == '1'):
+            ret['self_ready'] = True
+        else:
+            ret['self_ready'] = False
         ret['status_code'] = 200
         ret['msg'] = '获取成功'
         ret['state'] = room.state
