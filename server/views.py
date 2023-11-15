@@ -185,7 +185,7 @@ class Start(APIView):
                 room.round = 1
                 room.save()
                 ret['status_code'] = 200
-                ret['msg'] = '开始'
+                ret['msg'] = '开始游戏成功'
             return JsonResponse(ret)
         else:
             pos = 0
