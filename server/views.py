@@ -320,6 +320,9 @@ class Exit(APIView):
             return JsonResponse(ret)
         member = room.member.split(',')
         ready = room.ready.split(',')
+        if user.username not in member:
+            ret['status_code'] = 403
+            ret['msg'] = '不在房间内'
         new_member_list = member[0]
         new_ready_list = ready[0]
         for i in range(1, len(member)):
