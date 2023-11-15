@@ -323,6 +323,7 @@ class Exit(APIView):
         if user.username not in member:
             ret['status_code'] = 403
             ret['msg'] = '不在房间内'
+            return JsonResponse(ret)
         new_member_list = member[0]
         new_ready_list = ready[0]
         for i in range(1, len(member)):
