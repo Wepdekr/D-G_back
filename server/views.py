@@ -310,9 +310,11 @@ class Exit(APIView):
         room_id = request.POST.get('room_id')
         user = request.user
         room = models.Room_Info.objects.filter(room_id=room_id).first()
+        print(not room)
         if not room:
             ret['status_code'] = 404
             ret['msg'] = '房间未找到'
+            return JsonResponse(ret)
         if user.username == room.owner:
             room.delete()
             ret['status_code'] = 200
