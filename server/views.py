@@ -83,7 +83,7 @@ class Room(APIView):
 
     def get(self, request):
         ret = {}
-        room_id = request.GET.get('room_id')
+        room_id = request.GET.get('room_id') # TODO 应当限制只能查看自己所在房间的情况
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if not room:
             ret['status_code'] = 404
