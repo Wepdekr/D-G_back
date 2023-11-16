@@ -280,6 +280,35 @@ class Submit(APIView):
         ret['msg'] = '提交成功'
         return JsonResponse(ret)
 
+class Ready(APIView):
+    authentication_classes = [Authtication, ]
+
+    def get(self, request):
+        ret = {}
+        user = request.user
+        room_id = request.GET.get('room_id')
+        room = models.Room_Info.objects.filter(room_id = room_id).first()
+        if not room:
+            ret['status_code'] = 404
+            ret['msg'] = '房间号错误'
+            return JsonResponse(ret)
+        round = request.GET('round')
+        round_info = models.Round_info.objects.filter(room_id = room_id, round = round)
+        if not round_info:
+            ret['status_code'] = 404
+            ret['msg'] = '轮次错误'
+            return JsonResponse(ret)
+        if round_info.round_state == -1:
+            ret['status_code'] = 403
+            ret['msg'] = '未进入该回合'
+            return JsonResponse(ret)
+        elif round_info.round_state == 0:
+            pass
+        else:
+            ret['status_code'] = 402
+            ret['msg'] = '回合正在进行或已结束'
+            return JsonResponse(ret)
+
 # TODO 处理游戏过程的断线
 class Round(APIView):
     authentication_classes = [Authtication, ]
