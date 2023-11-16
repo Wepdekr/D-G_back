@@ -117,6 +117,11 @@ class Join(APIView):
         user = request.user
         room_id = request.POST.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
+        member = room.member.split(',')
+        if user.username in member:
+            ret['status_code'] = 403
+            ret['msg'] = '已在房间内'
+            return JsonResponse(ret)
         room.member = room.member + ',' + user.username
         room.ready = room.ready + ',' + '0'
         room.save()
