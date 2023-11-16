@@ -398,6 +398,8 @@ class Round(APIView):
     authentication_classes = [Authtication, ]
 
     def get(self, request):
+        import time
+        STATE2_TIMEOUT = 60000 # 60s
         ret = {}
         room_id = request.GET.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
@@ -417,6 +419,9 @@ class Round(APIView):
         ret['status_code'] = 200
         ret['round'] = room.round
         ret['msg']='获取成功'
+        if round_info.round_state == 1 and (time.time() - round_info.start_time > STATE2_TIMEOUT): # 状态1超时
+            round_info.round_state = 2
+            round_info.save()
         return JsonResponse(ret)
 
 
