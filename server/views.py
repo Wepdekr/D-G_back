@@ -133,10 +133,10 @@ class Room(APIView):
 class Join(APIView):
     authentication_classes = [Authtication, ]
 
-    def post(self, request): # TODO 不能加入已经开始的房间
+    def post(self, request):
         ret = {}
         user = request.user
-        room_id = request.POST.get('room_id') #TODO 如果已经在房间中要进行处理
+        room_id = request.POST.get('room_id')
         if not room_id:
             ret['status_code'] = 404
             ret['msg'] = '请求参数错误'
@@ -145,6 +145,15 @@ class Join(APIView):
         if not room:
             ret['status_code'] = 403
             ret['msg'] = '房间不存在'
+            return JsonResponse(ret)
+        if room.state:
+            ret['status_code'] = 403
+            ret['msg'] = '房间已开始'
+            return JsonResponse(ret)
+        member = room.member.split(',')
+        if user.username in member:
+            ret['status_code'] = 403
+            ret['msg'] = '已在房间内'
             return JsonResponse(ret)
         room.member = room.member + ',' + user.username # TODO 这样如果用户名存在,会有问题，可以改为jsonField存储列表
         room.ready = room.ready + ',' + '0'
@@ -220,13 +229,17 @@ class Lexicon(APIView):
             ret['status_code'] = 404
             ret['msg'] = '请求参数错误'
             return JsonResponse(ret) 
+        if int(lexicon_id) < 0 or int(lexicon_id) > 7:
+            ret['status_code'] = 404
+            ret['msg'] = '词库号错误'
+            return JsonResponse(ret)
         user = request.user
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if user.username != room.owner:
             ret['status_code'] = 403
             ret['msg'] = '无修改权限'
         else:
-            room.lexicon_id = lexicon_id # TODO 对非法词库号的处理
+            room.lexicon_id = lexicon_id
             room.save()
             ret['status_code'] = 200
             ret['msg'] = '修改成功'
