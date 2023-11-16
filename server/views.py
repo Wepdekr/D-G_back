@@ -303,6 +303,7 @@ class Round(APIView):
         ret['ready_num'] = round_info.ready_num
         ret['status_code'] = 200
         ret['round'] = room.round
+        ret['msg']='获取成功'
         return JsonResponse(ret)
 
 
