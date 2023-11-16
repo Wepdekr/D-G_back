@@ -117,6 +117,10 @@ class Join(APIView):
         user = request.user
         room_id = request.POST.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if room.state:
+            ret['status_code'] = 403
+            ret['msg'] = '房间已开始'
+            return JsonResponse(ret)
         member = room.member.split(',')
         if user.username in member:
             ret['status_code'] = 403
