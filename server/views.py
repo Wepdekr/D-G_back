@@ -182,7 +182,6 @@ class Start(APIView):
                 ret['status_code'] = 201
                 ret['msg'] = '有人未准备'
             else:
-                import time
                 room.state = 1
                 with open('server/lexicon.json', encoding='utf-8') as f:
                     lexicon_data = json.load(f)
@@ -194,9 +193,9 @@ class Start(APIView):
                                                     word=res[i])
                 for i in range(len(res)):
                     if i == 0:
-                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = 0, start_time = int(time.time()))
+                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = 0)
                     else:
-                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = -1, start_time = int(time.time()))
+                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = -1)
                 room.round = 1
                 room.save()
                 ret['status_code'] = 200
@@ -285,16 +284,67 @@ class Submit(APIView):
         room_id = request.POST.get('room_id')
         is_word = request.POST.get('is_word')
         round = request.POST.get('round')
-        if is_word == '1':
+        if not room_id or not is_word or not round:
+            ret['status_code'] = 404
+            ret['msg'] = '请求参数错误'
+            return JsonResponse(ret) 
+        room = models.Room_Info.objects.filter(room_id=room_id).first()
+        if not room:
+            ret['status_code'] = 403
+            ret['msg'] = '房间不存在'
+            return JsonResponse(ret)
+        round_info = models.Round_info.objects.filter(room_id=room_id, round = round)
+        if round_info.round_state == -1:
+            ret['status_code'] = 402
+            ret['msg'] = '未进入该回合'
+            return JsonResponse(ret)
+        elif round_info.round_state == 0:
+            ret['status_code'] = 401
+            ret['msg'] = '玩家未全部准备好'
+            return JsonResponse(ret)
+        elif round_info.round_state == 3:
+            ret['status_code'] = 400
+            ret['msg'] = '回合已结束不允许提交'
+            return JsonResponse(ret)
+        submit_member = round_info.submit_member.split(',')
+        if user.username in submit_member:
+            ret['status_code'] = 200
+            ret['msg'] = '玩家本轮已提交答案'
+            return JsonResponse(ret) 
+        if is_word == '1': # 提交的是词语
             word = request.POST.get('word')
-            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=1, word=word)
+            work_info = models.Work_info.objects.filter(room_id=room_id, round=round, username=user.username, category = 0).first()
+            work_info.word = word
+            work_info.save()
         else:
             img = request.POST.get('img')
-            models.Work_info.objects.create(room_id=room_id, round=round, username=user.username, category=0, img=img)
-        room = models.Room_Info.objects.filter(room_id=room_id).first()
-        if len(models.Work_info.objects.filter(room_id=room_id, round=round)) == len(room.member.split(',')):
+            work_info = models.Work_info.objects.filter(room_id=room_id, round=round, username=user.username, category = 1).first()
+            work_info.img = img
+            work_info.save()
+
+        round_info.submit_num += 1
+        submit_member.append(user.username)
+        round_info.submit_member = ','.join(submit_member)
+        round_finish_flag = False
+        if round_info.submit_num == len(room.member.split(',')):
+            round_info.round_state = 3
+            round_finish_flag = True
+        round_info.save()
+
+        if round_finish_flag:
             room.round = room.round + 1
             room.save()
+            nxt_round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round)
+            nxt_round_info.round_state = 0
+            member = room.member.split(',')
+            if is_word == "1": # 上一轮提交词语，本轮问题应该是词语，本轮cate为1，上轮cate为0
+                for i, user in enumerate(member):
+                    prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 0).first()
+                    models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 1, word=prework.word)
+            else: # 上一轮提交图片，本轮问题应该是图片，本轮cate为0，上轮cate为1
+                for i, user in enumerate(member):
+                    prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 1).first()
+                    models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 0, img=prework.img)
         ret['status_code'] = 200
         ret['msg'] = '提交成功'
         return JsonResponse(ret)
@@ -332,7 +382,9 @@ class Ready(APIView):
             round_info.ready_member = ','.join(member)
             tot_num = len(room.member.split(','))
             if round_info.ready_num == tot_num:
+                import time
                 round_info.round_state = 1
+                round_info.start_time = int(time.time())
             round_info.save()
             ret['status_code'] = 200
             ret['msg'] = '本轮准备成功'
