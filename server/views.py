@@ -182,6 +182,7 @@ class Start(APIView):
                 ret['status_code'] = 201
                 ret['msg'] = '有人未准备'
             else:
+                import time
                 room.state = 1
                 with open('server/lexicon.json', encoding='utf-8') as f:
                     lexicon_data = json.load(f)
@@ -189,8 +190,13 @@ class Start(APIView):
                 lexicon = lexicon_data[sort[room.lexicon_id]]
                 res = sample(lexicon, len(member))
                 for i in range(len(res)):
-                    models.Work_info.objects.create(username=member[i], room_id=room_id, round=0, category=1,
+                    models.Work_info.objects.create(username=member[i], room_id=room_id, round=1, category=1,
                                                     word=res[i])
+                for i in range(len(res)):
+                    if i == 0:
+                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = 0, start_time = int(time.time()))
+                    else:
+                        models.Round_info.objects.create(room_id = room_id, round = i+1, round_state = -1, start_time = int(time.time()))
                 room.round = 1
                 room.save()
                 ret['status_code'] = 200
@@ -316,7 +322,20 @@ class Ready(APIView):
             ret['msg'] = '未进入该回合'
             return JsonResponse(ret)
         elif round_info.round_state == 0:
-            pass
+            member = round_info.ready_member.split(',')
+            if user.username in member:
+                ret['status_code'] = 200
+                ret['msg'] = '玩家本轮已准备'
+                return JsonResponse(ret)
+            member.append(user.username)
+            round_info.ready_num += 1
+            round_info.ready_member = ','.join(member)
+            tot_num = len(room.member.split(','))
+            if round_info.ready_num == tot_num:
+                round_info.round_state = 1
+            round_info.save()
+            ret['status_code'] = 200
+            ret['msg'] = '本轮准备成功'
         else:
             ret['status_code'] = 402
             ret['msg'] = '回合正在进行或已结束'
