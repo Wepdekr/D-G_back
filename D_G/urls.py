@@ -31,4 +31,5 @@ urlpatterns = [
     path(r'round', views.Round.as_view()),
     path(r'vote', views.Vote.as_view()),
     path(r'exit', views.Exit.as_view()),
+    path(r'ready',views.Ready.as_view()),
 ]
