@@ -22,8 +22,6 @@ class Work_info(models.Model):
     category = models.IntegerField(default=0)  #题目是？ 0图片 1词语
     img = models.TextField(default='')
     word = models.TextField(default='')
-    approval = models.IntegerField(default=0)
-    disapproval = models.IntegerField(default=0)
 
 class Round_info(models.Model):
     room_id = models.TextField(default='')
@@ -34,3 +32,9 @@ class Round_info(models.Model):
     start_time = models.IntegerField(default=0)
     ready_num = models.IntegerField(default=0)
     ready_member = models.TextField(default='')
+
+class Question_Vote(models.Model):
+    room_id = models.TextField(default='')
+    answer_seq = models.TextField(default='')
+    approval = models.IntegerField(default=0)
+    disapproval = models.IntegerField(default=0)

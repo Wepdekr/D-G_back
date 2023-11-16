@@ -431,7 +431,7 @@ class Round(APIView):
         return JsonResponse(ret)
 
 
-class Vote(APIView):
+class Vote(APIView): # TODO 需要重置以适应多轮展示
     authentication_classes = [Authtication, ]
 
     def get(self, request):
