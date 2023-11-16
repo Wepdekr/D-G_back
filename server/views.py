@@ -196,6 +196,10 @@ class Lexicon(APIView):
         ret = {}
         room_id = request.POST.get('room_id')
         lexicon_id = request.POST.get('lexicon_id')
+        if int(lexicon_id) < 0 or int(lexicon_id) > 7:
+            ret['status_code'] = 404
+            ret['msg'] = '词库号错误'
+            return JsonResponse(ret)
         user = request.user
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if user.username != room.owner:
