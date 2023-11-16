@@ -280,7 +280,7 @@ class Submit(APIView):
         ret['msg'] = '提交成功'
         return JsonResponse(ret)
 
-
+# TODO 处理游戏过程的断线
 class Round(APIView):
     authentication_classes = [Authtication, ]
 
@@ -292,6 +292,15 @@ class Round(APIView):
             ret['status_code'] = 404
             ret['msg'] = '房间号错误'
             return JsonResponse(ret)
+        round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round)
+        if not round_info:
+            ret['status_code'] = 404
+            ret['msg'] = '轮数错误'
+            return JsonResponse(ret)
+        ret['round_state'] = round_info.round_state
+        ret['submit_num'] = round_info.submit_num
+        ret['start_time'] = round_info.start_time
+        ret['ready_num'] = round_info.ready_num
         ret['status_code'] = 200
         ret['round'] = room.round
         return JsonResponse(ret)

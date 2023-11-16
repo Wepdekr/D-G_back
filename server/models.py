@@ -24,3 +24,13 @@ class Work_info(models.Model):
     word = models.TextField(default='')
     approval = models.IntegerField(default=0)
     disapproval = models.IntegerField(default=0)
+
+class Round_info(models.Model):
+    room_id = models.TextField(default='')
+    round = models.IntegerField(default=0)
+    round_state = models.IntegerField(default=-1)
+    submit_num = models.IntegerField(default=0)
+    submit_member = models.TextField(default='')
+    start_time = models.IntegerField(default=0)
+    ready_num = models.IntegerField(default=0)
+    ready_member = models.TextField(default='')
