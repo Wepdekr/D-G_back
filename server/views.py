@@ -259,6 +259,10 @@ class Work(APIView):
         room_id = request.GET.get('room_id')
         round = request.GET.get('round')
         username = request.GET.get('username')
+        if not room_id or not round or not username:
+            ret['status_code'] = 404
+            ret['msg'] = '请求参数错误'
+            return JsonResponse(ret) 
         work = models.Work_info.objects.filter(room_id=room_id, round=round, username=username).first()
         if not work:
             ret['status_code'] = 404
@@ -268,10 +272,12 @@ class Work(APIView):
             ret['status_code'] = 200
             ret['word'] = work.word
             ret['img'] = ''
+            ret['type'] = 1
         else:
             ret['status_code'] = 200
             ret['word'] = ''
             ret['img'] = work.img
+            ret['type'] = 0
         return JsonResponse(ret)
 
 
