@@ -359,7 +359,8 @@ class Submit(APIView):
                 for i, user in enumerate(member):
                     models.Question_Vote.objects.create(
                         room_id = room_id,
-                        answer_seq = ','.join(member[i:]+member[:i])
+                        answer_seq = ','.join(member[i:]+member[:i]),
+                        show_pos = 0
                     )
         ret['status_code'] = 200
         ret['msg'] = '提交成功'
@@ -455,18 +456,55 @@ class Vote(APIView): # TODO 需要重置以适应多轮展示
     authentication_classes = [Authtication, ]
 
     def get(self, request):
+        import time
+        VOTE_SHOW_INTERVAL = 15000 # 15s
         ret = {}
         room_id = request.GET.get('room_id')
-        username = request.GET.get('username')
-        round = request.GET.get('round')
-        work = models.Work_info.objects.filter(room_id=room_id, username=username, round=round).first()
-        if not work:
+        username = request.user.username
+        ques = models.Question_Vote.objects.filter(room_id = room_id, finish_show = 0).order_by('id').first()
+        if not ques:
             ret['status_code'] = 404
-            ret['msg'] = '未找到结果'
+            ret['msg'] = '参数错误'
             return JsonResponse(ret)
+        ques_member = ques.answer_seq.split(',')
+        if ques.first_show != 0:
+            ques.finish_show = 0
+            ques.show_time = int(time.time())
+            ques.save()
+
+        if ques.show_pos == len(ques_member):
+            show_member = ques_member[-1]
+            show_round = ques.show_pos
+            work = models.Work_info.objects.filter(room_id = room_id, round = show_round, username = show_member).first()
+            if work.category == 1: # 最后一轮（n+1轮）展示图片
+                ret['show_type'] = 0
+                ret['show_img'] = work.img
+            else: # 最后一轮（n+1轮）展示词语
+                ret['show_type'] = 1
+                ret['show_text'] = work.word
+        else:
+            show_member = ques_member[ques.show_pos]
+            show_round = ques.show_pos+1
+            work = models.Work_info.objects.filter(room_id = room_id, round = show_round, username = show_member).first()
+            if work.category == 1: # 展示词语
+                ret['show_type'] = 1
+                ret['show_text'] = work.word
+            else: # 展示图片
+                ret['show_type'] = 0
+                ret['show_img'] = work.img
+
+        if time.time() - ques.show_time > VOTE_SHOW_INTERVAL:
+            ques.show_pos += 1
+            ques.show_time = 0
+            ques.first_show = 1
+            if ques.show_pos == len(ques_member)+1:
+                ques.finish_show = 1
+            ques.save()
+
         ret['status_code'] = 200
-        ret['approval'] = work.approval
-        ret['disapproval'] = work.disapproval
+        ret['approval'] = ques.approval
+        ret['disapproval'] = ques.disapproval
+        ret['vote_num'] = ques.vote_num
         return JsonResponse(ret)
 
     def post(self, request):
