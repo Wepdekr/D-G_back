@@ -531,7 +531,7 @@ class Vote(APIView):
         room = models.Room_Info.objects.filter(room_id = room_id).first()
         if not room:
             ret['status_code'] = 404
-            ret['msg'] = '未找到结果'
+            ret['msg'] = '未找到房间'
             return JsonResponse(ret)
         ques = models.Question_Vote.objects.filter(id = ques_id).first()
         if not ques:
