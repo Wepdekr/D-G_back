@@ -452,7 +452,7 @@ class Round(APIView):
         return JsonResponse(ret)
 
 
-class Vote(APIView): # TODO 需要重置以适应多轮展示
+class Vote(APIView):
     authentication_classes = [Authtication, ]
 
     def get(self, request):
@@ -494,11 +494,10 @@ class Vote(APIView): # TODO 需要重置以适应多轮展示
                 ret['show_img'] = work.img
 
         if time.time() - ques.show_time > VOTE_SHOW_INTERVAL:
-            ques.show_pos += 1
+            if ques.show_pos != len(ques_member): # 上限是len
+                ques.show_pos += 1
             ques.show_time = 0
             ques.first_show = 1
-            if ques.show_pos == len(ques_member)+1:
-                ques.finish_show = 1
             ques.save()
 
         ret['status_code'] = 200
@@ -510,22 +509,45 @@ class Vote(APIView): # TODO 需要重置以适应多轮展示
         return JsonResponse(ret)
 
     def post(self, request):
+        VOTE_SHOW_INTERVAL = 15000 # 15s
+        import time
         ret = {}
         room_id = request.POST.get('room_id')
         username = request.user.username
-        round = request.POST.get('round')
+        ques_id = request.POST.get('ques_id')
         result = request.POST.get('result')
-        work = models.Work_info.objects.filter(room_id=room_id, username=username, round=round).first()
-        if not work:
+        if not room_id or not username or not ques_id or not result:
+            ret['status_code'] = 404
+            ret['msg'] = '参数错误'
+            return JsonResponse(ret)
+        room = models.Room_Info.objects.filter(room_id = room_id).first()
+        if not room:
             ret['status_code'] = 404
             ret['msg'] = '未找到结果'
             return JsonResponse(ret)
+        ques = models.Question_Vote.objects.filter(id = ques_id).first()
+        if not ques:
+            ret['status_code'] = 404
+            ret['msg'] = '未找到结果'
+            return JsonResponse(ret)
+        vote_member = ques.vote_member.split(',')
+        if username in vote_member:
+            ret['status_code'] = 200
+            ret['msg'] = '该玩家已投票'
+            return JsonResponse(ret)
+        vote_member.append(username)
+        ques.vote_num += 1
+        ques.vote_member = ','.join(vote_member)
         if result == '1':
-            work.approval = work.approval + 1
+            ques.approval = ques.approval + 1
         else:
-            work.disapproval = work.disapproval + 1
-        work.save()
+            ques.disapproval = ques.disapproval + 1
+        room_len = len(room.member.split(','))
+        if ques.show_pos == room_len and (ques.first_show == 0 and time.time()-ques.show_time>VOTE_SHOW_INTERVAL) and ques.vote_num == room_len:
+            ques.finish_show = 1
+        ques.save()
         ret['status_code'] = 200
+        ret['msg'] = '投票成功'
         return JsonResponse(ret)
 
 
