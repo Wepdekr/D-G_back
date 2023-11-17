@@ -416,6 +416,12 @@ class Round(APIView):
             ret['status_code'] = 404
             ret['msg'] = '房间号错误'
             return JsonResponse(ret)
+        if room.round == len(room.member.split(','))+1:
+            ret['status_code'] = 200
+            ret['msg']='获取成功'
+            ret['round_state'] = 3
+            ret['is_finished'] = True
+            return JsonResponse(ret)
         round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round)
         if not round_info:
             ret['status_code'] = 404
@@ -429,6 +435,7 @@ class Round(APIView):
         ret['is_submit'] = user.username in round_info.submit_member.split(',')
         ret['status_code'] = 200
         ret['round'] = room.round
+        ret['is_finished'] = False
         ret['msg']='获取成功'
         if round_info.round_state == 1 and (time.time() - round_info.start_time > STATE2_TIMEOUT): # 状态1超时
             round_info.round_state = 2
