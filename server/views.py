@@ -273,11 +273,13 @@ class Work(APIView):
             ret['word'] = work.word
             ret['img'] = ''
             ret['type'] = 1
+            ret['msg'] = '获取成功'
         else:
             ret['status_code'] = 200
             ret['word'] = ''
             ret['img'] = work.img
             ret['type'] = 0
+            ret['msg'] = '获取成功'
         return JsonResponse(ret)
 
 
