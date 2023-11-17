@@ -506,12 +506,13 @@ class Vote(APIView): # TODO 需要重置以适应多轮展示
         ret['disapproval'] = ques.disapproval
         ret['vote_num'] = ques.vote_num
         ret['is_vote'] = username in ques.vote_member.split(',')
+        ret['ques_id'] = ques.id
         return JsonResponse(ret)
 
     def post(self, request):
         ret = {}
         room_id = request.POST.get('room_id')
-        username = request.POST.get('username')
+        username = request.user.username
         round = request.POST.get('round')
         result = request.POST.get('result')
         work = models.Work_info.objects.filter(room_id=room_id, username=username, round=round).first()
