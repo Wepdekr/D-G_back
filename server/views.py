@@ -505,6 +505,7 @@ class Vote(APIView): # TODO 需要重置以适应多轮展示
         ret['approval'] = ques.approval
         ret['disapproval'] = ques.disapproval
         ret['vote_num'] = ques.vote_num
+        ret['is_vote'] = username in ques.vote_member.split(',')
         return JsonResponse(ret)
 
     def post(self, request):
