@@ -407,6 +407,7 @@ class Round(APIView):
         import time
         STATE2_TIMEOUT = 60000 # 60s
         ret = {}
+        user = request.user
         room_id = request.GET.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
         if not room:
@@ -422,6 +423,7 @@ class Round(APIView):
         ret['submit_num'] = round_info.submit_num
         ret['start_time'] = round_info.start_time
         ret['ready_num'] = round_info.ready_num
+        ret['is_ready'] = user.username in round_info.ready_member.split(',')
         ret['status_code'] = 200
         ret['round'] = room.round
         ret['msg']='获取成功'
