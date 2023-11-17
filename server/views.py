@@ -258,7 +258,7 @@ class Work(APIView):
         ret = {}
         room_id = request.GET.get('room_id')
         round = request.GET.get('round')
-        username = request.GET.get('username')
+        username = request.user.username
         if not room_id or not round or not username:
             ret['status_code'] = 404
             ret['msg'] = '请求参数错误'
