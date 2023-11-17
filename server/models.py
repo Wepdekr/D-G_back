@@ -36,5 +36,10 @@ class Round_info(models.Model):
 class Question_Vote(models.Model):
     room_id = models.TextField(default='')
     answer_seq = models.TextField(default='')
+    show_pos = models.IntegerField(default=-1)
+    show_time = models.IntegerField(default=0)
+    finish_show = models.IntegerField(default=0)
     approval = models.IntegerField(default=0)
     disapproval = models.IntegerField(default=0)
+    vote_member = models.TextField(default='')
+    vote_num = models.IntegerField(default=0)

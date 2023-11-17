@@ -342,17 +342,25 @@ class Submit(APIView):
         if round_finish_flag:
             room.round = room.round + 1
             room.save()
-            nxt_round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round)
-            nxt_round_info.round_state = 0
-            member = room.member.split(',')
-            if is_word == "1": # 上一轮提交词语，本轮问题应该是词语，本轮cate为1，上轮cate为0
+            nxt_round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round).first()
+            if nxt_round_info: # 全部结束时没有下一轮
+                nxt_round_info.round_state = 0
+                member = room.member.split(',')
+                if is_word == "1": # 上一轮提交词语，本轮问题应该是词语，本轮cate为1，上轮cate为0
+                    for i, user in enumerate(member):
+                        prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 0).first()
+                        models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 1, word=prework.word)
+                else: # 上一轮提交图片，本轮问题应该是图片，本轮cate为0，上轮cate为1
+                    for i, user in enumerate(member):
+                        prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 1).first()
+                        models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 0, img=prework.img)
+            else:
+                member = room.member.split(',')
                 for i, user in enumerate(member):
-                    prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 0).first()
-                    models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 1, word=prework.word)
-            else: # 上一轮提交图片，本轮问题应该是图片，本轮cate为0，上轮cate为1
-                for i, user in enumerate(member):
-                    prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 1).first()
-                    models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 0, img=prework.img)
+                    models.Question_Vote.objects.create(
+                        room_id = room_id,
+                        answer_seq = ','.join(member[i:]+member[:i])
+                    )
         ret['status_code'] = 200
         ret['msg'] = '提交成功'
         return JsonResponse(ret)
