@@ -38,6 +38,7 @@ class Question_Vote(models.Model):
     answer_seq = models.TextField(default='')
     show_pos = models.IntegerField(default=-1)
     show_time = models.IntegerField(default=0)
+    first_show = models.IntegerField(default=1)
     finish_show = models.IntegerField(default=0)
     approval = models.IntegerField(default=0)
     disapproval = models.IntegerField(default=0)
