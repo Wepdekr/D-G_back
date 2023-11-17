@@ -513,6 +513,7 @@ class Vote(APIView):
         ret['is_vote'] = username in ques.vote_member.split(',')
         ret['ques_id'] = ques.id
         ret['is_finish'] = 0
+        ret['msg'] = '获取成功'
         return JsonResponse(ret)
 
     def post(self, request):
