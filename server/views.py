@@ -461,10 +461,16 @@ class Vote(APIView):
         ret = {}
         room_id = request.GET.get('room_id')
         username = request.user.username
-        ques = models.Question_Vote.objects.filter(room_id = room_id, finish_show = 0).order_by('id').first()
-        if not ques:
+        room = models.Room_Info.objects.filter(room_id = room_id)
+        if not room:
             ret['status_code'] = 404
             ret['msg'] = '参数错误'
+            return JsonResponse(ret)
+        ques = models.Question_Vote.objects.filter(room_id = room_id, finish_show = 0).order_by('id').first()
+        if not ques:
+            ret['status_code'] = 200
+            ret['is_finish'] = 1
+            ret['msg'] = '展示全部完成'
             return JsonResponse(ret)
         ques_member = ques.answer_seq.split(',')
         if ques.first_show != 0:
@@ -506,6 +512,7 @@ class Vote(APIView):
         ret['vote_num'] = ques.vote_num
         ret['is_vote'] = username in ques.vote_member.split(',')
         ret['ques_id'] = ques.id
+        ret['is_finish'] = 0
         return JsonResponse(ret)
 
     def post(self, request):
