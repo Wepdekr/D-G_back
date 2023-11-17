@@ -424,6 +424,7 @@ class Round(APIView):
         ret['start_time'] = round_info.start_time
         ret['ready_num'] = round_info.ready_num
         ret['is_ready'] = user.username in round_info.ready_member.split(',')
+        ret['is_submit'] = user.username in round_info.submit_member.split(',')
         ret['status_code'] = 200
         ret['round'] = room.round
         ret['msg']='获取成功'
