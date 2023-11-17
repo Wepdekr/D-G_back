@@ -595,3 +595,36 @@ class Exit(APIView):
         ret['status_code'] = 200
         ret['msg'] = '房间已退出'
         return JsonResponse(ret)
+
+class Leave(APIView):
+    authentication_classes = [Authtication, ]
+
+    def post(self, request):
+        ret = {}
+        room_id = request.POST.get('room_id')
+        user = request.user
+        if not room_id:
+            ret['status_code'] = 404
+            ret['msg'] = '参数错误'
+            return JsonResponse(ret)
+        room = models.Room_Info.objects.filter(room_id = room_id).first()
+        if not room:
+            ret['status_code'] = 403
+            ret['msg'] = '房间未找到'
+            return JsonResponse(ret)
+        member = room.member.split(',')
+        if not user.username in member:
+            ret['status_code'] = 402
+            ret['msg'] = '用户不在房间中'
+            return JsonResponse(ret)
+        member.remove(user.username)
+        room.member = ','.join(member)
+        room.save()
+        if len(member) == 0:
+            models.Room_Info.objects.filter(room_id = room_id).delete()
+            models.Work_info.objects.filter(room_id = room_id).delete()
+            models.Round_info.objects.filter(room_id = room_id).delete()
+            models.Question_Vote.objects.filter(room_id = room_id).delete()
+        ret['status_code'] = 200
+        ret['msg'] = '成功退出'
+        return JsonResponse(ret)
