@@ -476,7 +476,7 @@ class Vote(APIView):
             return JsonResponse(ret)
         ques_member = list(filter(None,ques.answer_seq.split(',')))
         if ques.first_show != 0:
-            ques.finish_show = 0
+            ques.first_show = 0
             ques.show_time = int(time.time())
             ques.save()
 
@@ -504,8 +504,8 @@ class Vote(APIView):
         if time.time() - ques.show_time > VOTE_SHOW_INTERVAL:
             if ques.show_pos != len(ques_member): # 上限是len
                 ques.show_pos += 1
-            ques.show_time = 0
-            ques.first_show = 1
+                ques.show_time = 0
+                ques.first_show = 1
             ques.save()
 
         ret['status_code'] = 200
