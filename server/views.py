@@ -94,12 +94,12 @@ class Room(APIView):
             return JsonResponse(ret)
         user = request.user
         try:
-            pos = room.member.split(',').index(user.username)
+            pos = list(filter(None,room.member.split(','))).index(user.username)
         except ValueError:
             ret['status_code'] = 403
             ret['msg'] = '玩家不在此房间中'
             return JsonResponse(ret)
-        if(room.ready.split(',')[pos] == '1'):
+        if(list(filter(None,room.ready.split(',')))[pos] == '1'):
             ret['self_ready'] = True
         else:
             ret['self_ready'] = False
@@ -150,7 +150,7 @@ class Join(APIView):
             ret['status_code'] = 403
             ret['msg'] = '房间已开始'
             return JsonResponse(ret)
-        member = room.member.split(',')
+        member = list(filter(None,room.member.split(',')))
         if user.username in member:
             ret['status_code'] = 403
             ret['msg'] = '已在房间内'
@@ -171,8 +171,8 @@ class Start(APIView):
         user = request.user
         room_id = request.POST.get('room_id')
         room = models.Room_Info.objects.filter(room_id=room_id).first()
-        member = room.member.split(',')
-        ready = room.ready.split(',')
+        member = list(filter(None,room.member.split(',')))
+        ready = list(filter(None,room.ready.split(',')))
         if user.username not in member:
             ret['status_code'] = 404
             ret['msg'] = '未在房间中'
@@ -301,7 +301,7 @@ class Submit(APIView):
             ret['status_code'] = 403
             ret['msg'] = '房间不存在'
             return JsonResponse(ret)
-        round_info = models.Round_info.objects.filter(room_id=room_id, round = round)
+        round_info = models.Round_info.objects.filter(room_id=room_id, round = round).first()
         if round_info.round_state == -1:
             ret['status_code'] = 402
             ret['msg'] = '未进入该回合'
@@ -314,7 +314,7 @@ class Submit(APIView):
             ret['status_code'] = 400
             ret['msg'] = '回合已结束不允许提交'
             return JsonResponse(ret)
-        submit_member = round_info.submit_member.split(',')
+        submit_member = list(filter(None,list(filter(None,round_info.submit_member.split(',')))))
         if user.username in submit_member:
             ret['status_code'] = 200
             ret['msg'] = '玩家本轮已提交答案'
@@ -334,7 +334,7 @@ class Submit(APIView):
         submit_member.append(user.username)
         round_info.submit_member = ','.join(submit_member)
         round_finish_flag = False
-        if round_info.submit_num == len(room.member.split(',')):
+        if round_info.submit_num == len(list(filter(None,room.member.split(',')))):
             round_info.round_state = 3
             round_finish_flag = True
         round_info.save()
@@ -345,7 +345,7 @@ class Submit(APIView):
             nxt_round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round).first()
             if nxt_round_info: # 全部结束时没有下一轮
                 nxt_round_info.round_state = 0
-                member = room.member.split(',')
+                member = list(filter(None,room.member.split(',')))
                 if is_word == "1": # 上一轮提交词语，本轮问题应该是词语，本轮cate为1，上轮cate为0
                     for i, user in enumerate(member):
                         prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 0).first()
@@ -354,8 +354,9 @@ class Submit(APIView):
                     for i, user in enumerate(member):
                         prework = models.Work_info.objects.filter(room_id=room_id, round = room.round-1, username=member[i-1], category = 1).first()
                         models.Work_info.objects.create(username = member[i], room_id=room_id, round = room.round, category = 0, img=prework.img)
+                nxt_round_info.save()
             else:
-                member = room.member.split(',')
+                member = list(filter(None,room.member.split(',')))
                 for i, user in enumerate(member):
                     models.Question_Vote.objects.create(
                         room_id = room_id,
@@ -378,8 +379,8 @@ class Ready(APIView):
             ret['status_code'] = 404
             ret['msg'] = '房间号错误'
             return JsonResponse(ret)
-        round = request.GET('round')
-        round_info = models.Round_info.objects.filter(room_id = room_id, round = round)
+        round = request.GET.get('round')
+        round_info = models.Round_info.objects.filter(room_id = room_id, round = round).first()
         if not round_info:
             ret['status_code'] = 404
             ret['msg'] = '轮次错误'
@@ -389,7 +390,7 @@ class Ready(APIView):
             ret['msg'] = '未进入该回合'
             return JsonResponse(ret)
         elif round_info.round_state == 0:
-            member = round_info.ready_member.split(',')
+            member = list(filter(None,round_info.ready_member.split(',')))
             if user.username in member:
                 ret['status_code'] = 200
                 ret['msg'] = '玩家本轮已准备'
@@ -397,7 +398,7 @@ class Ready(APIView):
             member.append(user.username)
             round_info.ready_num += 1
             round_info.ready_member = ','.join(member)
-            tot_num = len(room.member.split(','))
+            tot_num = len(list(filter(None,room.member.split(','))))
             if round_info.ready_num == tot_num:
                 import time
                 round_info.round_state = 1
@@ -405,6 +406,7 @@ class Ready(APIView):
             round_info.save()
             ret['status_code'] = 200
             ret['msg'] = '本轮准备成功'
+            return JsonResponse(ret)
         else:
             ret['status_code'] = 402
             ret['msg'] = '回合正在进行或已结束'
@@ -416,7 +418,7 @@ class Round(APIView):
 
     def get(self, request):
         import time
-        STATE2_TIMEOUT = 60000 # 60s
+        STATE2_TIMEOUT = 60 # 60s
         ret = {}
         user = request.user
         room_id = request.GET.get('room_id')
@@ -425,13 +427,13 @@ class Round(APIView):
             ret['status_code'] = 404
             ret['msg'] = '房间号错误'
             return JsonResponse(ret)
-        if room.round == len(room.member.split(','))+1:
+        if room.round == len(list(filter(None,room.member.split(','))))+1:
             ret['status_code'] = 200
             ret['msg']='获取成功'
             ret['round_state'] = 3
             ret['is_finished'] = True
             return JsonResponse(ret)
-        round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round)
+        round_info = models.Round_info.objects.filter(room_id=room_id, round = room.round).first()
         if not round_info:
             ret['status_code'] = 404
             ret['msg'] = '轮数错误'
@@ -440,8 +442,8 @@ class Round(APIView):
         ret['submit_num'] = round_info.submit_num
         ret['start_time'] = round_info.start_time
         ret['ready_num'] = round_info.ready_num
-        ret['is_ready'] = user.username in round_info.ready_member.split(',')
-        ret['is_submit'] = user.username in round_info.submit_member.split(',')
+        ret['is_ready'] = user.username in list(filter(None,round_info.ready_member.split(',')))
+        ret['is_submit'] = user.username in list(filter(None,round_info.submit_member.split(',')))
         ret['status_code'] = 200
         ret['round'] = room.round
         ret['is_finished'] = False
@@ -457,7 +459,7 @@ class Vote(APIView):
 
     def get(self, request):
         import time
-        VOTE_SHOW_INTERVAL = 15000 # 15s
+        VOTE_SHOW_INTERVAL = 15 # 15s
         ret = {}
         room_id = request.GET.get('room_id')
         username = request.user.username
@@ -472,7 +474,7 @@ class Vote(APIView):
             ret['is_finish'] = 1
             ret['msg'] = '展示全部完成'
             return JsonResponse(ret)
-        ques_member = ques.answer_seq.split(',')
+        ques_member = list(filter(None,ques.answer_seq.split(',')))
         if ques.first_show != 0:
             ques.finish_show = 0
             ques.show_time = int(time.time())
@@ -510,14 +512,14 @@ class Vote(APIView):
         ret['approval'] = ques.approval
         ret['disapproval'] = ques.disapproval
         ret['vote_num'] = ques.vote_num
-        ret['is_vote'] = username in ques.vote_member.split(',')
+        ret['is_vote'] = username in list(filter(None,ques.vote_member.split(',')))
         ret['ques_id'] = ques.id
         ret['is_finish'] = 0
         ret['msg'] = '获取成功'
         return JsonResponse(ret)
 
     def post(self, request):
-        VOTE_SHOW_INTERVAL = 15000 # 15s
+        VOTE_SHOW_INTERVAL = 15 # 15s
         import time
         ret = {}
         room_id = request.POST.get('room_id')
@@ -538,7 +540,7 @@ class Vote(APIView):
             ret['status_code'] = 404
             ret['msg'] = '未找到结果'
             return JsonResponse(ret)
-        vote_member = ques.vote_member.split(',')
+        vote_member = list(filter(None,ques.vote_member.split(',')))
         if username in vote_member:
             ret['status_code'] = 200
             ret['msg'] = '该玩家已投票'
@@ -550,7 +552,7 @@ class Vote(APIView):
             ques.approval = ques.approval + 1
         else:
             ques.disapproval = ques.disapproval + 1
-        room_len = len(room.member.split(','))
+        room_len = len(list(filter(None,room.member.split(','))))
         if ques.show_pos == room_len and (ques.first_show == 0 and time.time()-ques.show_time>VOTE_SHOW_INTERVAL) and ques.vote_num == room_len:
             ques.finish_show = 1
         ques.save()
@@ -577,8 +579,8 @@ class Exit(APIView):
             ret['status_code'] = 200
             ret['msg'] = '房间已解散'
             return JsonResponse(ret)
-        member = room.member.split(',')
-        ready = room.ready.split(',')
+        member = list(filter(None,room.member.split(',')))
+        ready = list(filter(None,room.ready.split(',')))
         if user.username not in member:
             ret['status_code'] = 403
             ret['msg'] = '不在房间内'
@@ -612,7 +614,7 @@ class Leave(APIView):
             ret['status_code'] = 403
             ret['msg'] = '房间未找到'
             return JsonResponse(ret)
-        member = room.member.split(',')
+        member = list(filter(None,room.member.split(',')))
         if not user.username in member:
             ret['status_code'] = 402
             ret['msg'] = '用户不在房间中'
