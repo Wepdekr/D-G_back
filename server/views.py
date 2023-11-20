@@ -459,11 +459,11 @@ class Vote(APIView):
 
     def get(self, request):
         import time
-        VOTE_SHOW_INTERVAL = 15 # 15s
+        VOTE_SHOW_INTERVAL = 5 # 5s
         ret = {}
         room_id = request.GET.get('room_id')
         username = request.user.username
-        room = models.Room_Info.objects.filter(room_id = room_id)
+        room = models.Room_Info.objects.filter(room_id = room_id).first()
         if not room:
             ret['status_code'] = 404
             ret['msg'] = '参数错误'
@@ -474,6 +474,16 @@ class Vote(APIView):
             ret['is_finish'] = 1
             ret['msg'] = '展示全部完成'
             return JsonResponse(ret)
+        room_len = len(list(filter(None,room.member.split(','))))
+        if ques.show_pos == room_len and (ques.first_show == 0 and time.time()-ques.show_time>VOTE_SHOW_INTERVAL) and ques.vote_num == room_len:
+            ques.finish_show = 1
+            ques.save()
+            ques = models.Question_Vote.objects.filter(room_id = room_id, finish_show = 0).order_by('id').first()
+            if not ques:
+                ret['status_code'] = 200
+                ret['is_finish'] = 1
+                ret['msg'] = '展示全部完成'
+                return JsonResponse(ret)
         ques_member = list(filter(None,ques.answer_seq.split(',')))
         if ques.first_show != 0:
             ques.first_show = 0
@@ -519,7 +529,7 @@ class Vote(APIView):
         return JsonResponse(ret)
 
     def post(self, request):
-        VOTE_SHOW_INTERVAL = 15 # 15s
+        VOTE_SHOW_INTERVAL = 5 # 5s
         import time
         ret = {}
         room_id = request.POST.get('room_id')
